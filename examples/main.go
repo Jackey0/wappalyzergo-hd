@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,13 +11,15 @@ import (
 )
 
 func main() {
-	resp, err := http.DefaultClient.Get("https://www.hackerone.com")
+	resp, err := http.DefaultClient.Get("http://139.155.4.180:9999")
 	if err != nil {
 		log.Fatal(err)
 	}
 	data, _ := ioutil.ReadAll(resp.Body) // Ignoring error for example
-
-	wappalyzerClient, err := wappalyzer.New()
+	var fingerfilepath string
+	flag.StringVar(&fingerfilepath, "ffp", "", "指纹库文件路径，默认为空")
+	flag.Parse()
+	wappalyzerClient, err := wappalyzer.New(fingerfilepath)
 	fingerprints := wappalyzerClient.Fingerprint(resp.Header, data)
 	fmt.Printf("%v\n", fingerprints)
 

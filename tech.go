@@ -3,6 +3,8 @@ package wappalyzer
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"strings"
 )
 
@@ -12,14 +14,14 @@ type Wappalyze struct {
 }
 
 // New creates a new tech detection instance
-func New() (*Wappalyze, error) {
+func New(fingerfilepath string) (*Wappalyze, error) {
 	wappalyze := &Wappalyze{
 		fingerprints: &CompiledFingerprints{
 			Apps: make(map[string]*CompiledFingerprint),
 		},
 	}
 
-	err := wappalyze.loadFingerprints()
+	err := wappalyze.loadFingerprints(fingerfilepath)
 	if err != nil {
 		return nil, err
 	}
@@ -27,9 +29,15 @@ func New() (*Wappalyze, error) {
 }
 
 // loadFingerprints loads the fingerprints and compiles them
-func (s *Wappalyze) loadFingerprints() error {
+func (s *Wappalyze) loadFingerprints(fingerfilepath string) error {
 	var fingerprintsStruct Fingerprints
-	err := json.Unmarshal([]byte(fingerprints), &fingerprintsStruct)
+	//读取指纹库文件
+	f, err := ioutil.ReadFile(fingerfilepath)
+	if err != nil {
+		fmt.Printf("读取本地文件失败，%v", err)
+		return nil
+	}
+	err = json.Unmarshal(f, &fingerprintsStruct)
 	if err != nil {
 		return err
 	}
